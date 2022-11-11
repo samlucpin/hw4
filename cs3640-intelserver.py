@@ -1,10 +1,8 @@
 import socket
 import socketserver
 import dnspython
-from argparse import ArgumentParser
 from ipaddress import ip_address, IPv4Address
-
-
+from cymruwhois import Client
 
 def typeIP(IP: str) -> str:
     try:
@@ -18,7 +16,7 @@ def IPV4_ADDR(domain):
         return addr
     else:
         return "This domain does not use a IPv4 Address"
-    return "?"
+    return "?IPv4?"
 
 def IPV6_ADDR(domain):
     addr = socket.gethostbyname(domain)
@@ -26,7 +24,7 @@ def IPV6_ADDR(domain):
         return addr
     else:
         return "This domain does not use a IPv6 Address"
-    return "?"
+    return "?IPv6?"
 
 def TLS_CERT(domain):
     try:
@@ -35,14 +33,41 @@ def TLS_CERT(domain):
         pass
     else:
         context = ssl.create_default_context()
-        conn = context.warp_socket(socket.socket(AF_INET), server_hostname=domain)
-        conn.connect((domain, 555))
+        conn = context.wrap_socket(socket.socket(AF_INET), server_hostname=domain)
+        conn.connect((domain, 443))
         cert = conn.getpeercert()
         return cert
 
 def HOSTING_AS(domain):
-    return
+    cymru = Client()
+    addr = socket.gethostbyname(domain)
+    r = cymru.lookup(addr)
+    return r.owner
 
+def ORGANIZATION(domain):
+    cymru = Client()
+    addr = socket.gethostbyname(domain)
+    r = cymru.lookup(addr)
+    tls = TLS_CERT(domain)
+    argDict = dict(x[0] for x in tls['issuer'])
+    return argDict['commonName']
+
+def runServer():
+    serverSock = socket.socket()
+    serverSock.bind(('127.0.0.1', 5555))
+    serverSock.listen(2)
+    conn, addr = serverSock.accept()
+    while True:
+        data = conn.recv(1024).decode()
+        if not data:
+            break
+        #print("from connected user: " + str(data))
+        data = "tester"
+        conn.send(data.encode())
+    conn.close()
+
+if __name__ == '__main__':
+    runServer()
 
 #class TCPHand(socketserver.BaseRequestHandler):
 
