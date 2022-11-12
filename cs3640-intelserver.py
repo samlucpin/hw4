@@ -33,10 +33,14 @@ def TLS_CERT(domain):
     except ImportError:
         pass
     else:
+        #sslContext = ssl.SSLContext()
+        #sslContext.verify_mode = ssl.CERT_REQUIRED
+        #cliSock = socket
         context = ssl.create_default_context()
-        conn = context.wrap_socket(socket.socket(AF_INET), server_hostname=domain)
+        conn = context.wrap_socket(socket.socket(), server_hostname=domain)
         conn.connect((domain, 443))
         cert = conn.getpeercert()
+        print(cert)
         return cert
 
 def HOSTING_AS(domain):
@@ -54,25 +58,30 @@ def ORGANIZATION(domain):
     return argDict['commonName']
 
 def runServer():
-    domConfirm = "GotDom"
+    #domConfirm = "GotDom"
     response = ""
     serverSock = socket.socket()
-    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+    #serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     serverSock.bind(('127.0.0.1', 5555))
-    serverSock.listen(5)
+    serverSock.listen()
     conn, addr = serverSock.accept()
-    dom = conn.recv(1024)
-    conn.send(domConfirm.encode())
-    service = conn.recv(1024)
-    #data = conn.recv(1024)
+    #dom = conn.recv(1024)
+    #print(dom)
+    #conn.send(domConfirm.encode())
+    #service = conn.recv(1024)
+    strT = conn.recv(1024).decode()
+    spltSpot = strT.index(',')
+    dom = strT[:spltSpot]
     #dom = data[0].decode()
+    service = strT[spltSpot+1:]
     #service = data[1].decode()
+    #print("before ifs")
     if (service=="IPV4_ADDR"):
         response = IPV4_ADDR(dom)
     elif (service=="IPV6_ADDR"):
         response = IPV6_ADDR(dom)
     elif (service=="TLS_CERT"):
-        response = TLS_CERT(dom)
+        response = str(TLS_CERT(dom))
     elif (service=="HOSTING_AS"):
         response = HOSTING_AS(dom)
     elif (service=="ORGANIZATION"):
@@ -80,6 +89,8 @@ def runServer():
     else:
         response = "Not A Valid Service Name"
     conn.send(response.encode())
+    print(response)
+    #print("after response sent")
     serverSock.close()
     conn.close()
 
