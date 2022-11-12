@@ -33,14 +33,10 @@ def TLS_CERT(domain):
     except ImportError:
         pass
     else:
-        #sslContext = ssl.SSLContext()
-        #sslContext.verify_mode = ssl.CERT_REQUIRED
-        #cliSock = socket
         context = ssl.create_default_context()
         conn = context.wrap_socket(socket.socket(), server_hostname=domain)
         conn.connect((domain, 443))
         cert = conn.getpeercert()
-        print(cert)
         return cert
 
 def HOSTING_AS(domain):
@@ -58,24 +54,15 @@ def ORGANIZATION(domain):
     return argDict['commonName']
 
 def runServer():
-    #domConfirm = "GotDom"
     response = ""
     serverSock = socket.socket()
-    #serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     serverSock.bind(('127.0.0.1', 5555))
     serverSock.listen()
     conn, addr = serverSock.accept()
-    #dom = conn.recv(1024)
-    #print(dom)
-    #conn.send(domConfirm.encode())
-    #service = conn.recv(1024)
     strT = conn.recv(1024).decode()
     spltSpot = strT.index(',')
     dom = strT[:spltSpot]
-    #dom = data[0].decode()
     service = strT[spltSpot+1:]
-    #service = data[1].decode()
-    #print("before ifs")
     if (service=="IPV4_ADDR"):
         response = IPV4_ADDR(dom)
     elif (service=="IPV6_ADDR"):
@@ -89,37 +76,8 @@ def runServer():
     else:
         response = "Not A Valid Service Name"
     conn.send(response.encode())
-    print(response)
-    #print("after response sent")
     serverSock.close()
     conn.close()
 
 if __name__ == '__main__':
     runServer()
-
-#class TCPHand(socketserver.BaseRequestHandler):
-
- #   def handle(self):
-  #      self.data = self.request.recv(1024).strip()
-   #     print("{} wrote:".format(self.client_address[0]))
-    #    print(self.data)
-     #   self.request.sendall(self.data.upper())
-
-
-#def main():
-
-   # return
-
-#if __name__ == "__main__":
-
- #   HOST, PORT = "127.0.0.1", 5555
-
-  #  with socketserver.TCPServer((HOST, PORT), TCPHand) as server:
-
-   #     server.serve_forever()
-
-
-
-#sockTCP = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-#server = socket.create_server(("127.0.0.1", 5555), family=socket.AF_INET, dualstack_ipv6=False)
-#server.bind(("127.0.0.1", 5555))

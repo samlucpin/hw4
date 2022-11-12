@@ -1,20 +1,12 @@
 import socket
-import os
 from argparse import ArgumentParser
 
 def runClient(sAddr,sPort,domain,service):
     sockClient = socket.socket()
-    #exec(open('cs3640-intelserver.py').read())
     sockClient.connect((sAddr, sPort))
-
     tupe = (domain, service)
     strT = ','.join([str(i) for i in tupe])
     sockClient.send(strT.encode())
-
-    #sockClient.send(domain.encode())
-    #domConfirm = sockClient.recv(1024).decode()
-    #print("confirming message = " + domConfirm)
-    #sockClient.send(service.encode())
     response = sockClient.recv(1024).decode()
 
     sockClient.close()
@@ -51,6 +43,5 @@ if __name__ == "__main__":
             help="The Service you want to use on the domain"
         )
     args = argParser.parse_args()
-    #os.system('python3 cs3640-intelserver.py')
     final = main(args.intel_server_addr, args.intel_server_port, args.domain, args.service)
     print(final)
