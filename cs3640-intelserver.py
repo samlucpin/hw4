@@ -1,7 +1,8 @@
 import socket
 import socketserver
-import dnspython
 from ipaddress import ip_address, IPv4Address
+import os
+#os.system('pip install cymruwhois')
 from cymruwhois import Client
 
 def typeIP(IP: str) -> str:
@@ -53,14 +54,19 @@ def ORGANIZATION(domain):
     return argDict['commonName']
 
 def runServer():
+    domConfirm = "GotDom"
     response = ""
     serverSock = socket.socket()
+    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     serverSock.bind(('127.0.0.1', 5555))
-    serverSock.listen(2)
+    serverSock.listen(5)
     conn, addr = serverSock.accept()
-    data = conn.recv(1024).decode()
-    dom = data[0]
-    service = data[1]
+    dom = conn.recv(1024)
+    conn.send(domConfirm.encode())
+    service = conn.recv(1024)
+    #data = conn.recv(1024)
+    #dom = data[0].decode()
+    #service = data[1].decode()
     if (service=="IPV4_ADDR"):
         response = IPV4_ADDR(dom)
     elif (service=="IPV6_ADDR"):
@@ -74,13 +80,11 @@ def runServer():
     else:
         response = "Not A Valid Service Name"
     conn.send(response.encode())
+    serverSock.close()
     conn.close()
 
-def main():
-    runServer()
-
 if __name__ == '__main__':
-    main()
+    runServer()
 
 #class TCPHand(socketserver.BaseRequestHandler):
 

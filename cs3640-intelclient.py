@@ -1,19 +1,23 @@
 import socket
-import cs3640-intelserver as inServ
+import os
 from argparse import ArgumentParser
 
 def runClient(sAddr,sPort,domain,service):
     sockClient = socket.socket()
+    #exec(open('cs3640-intelserver.py').read())
     sockClient.connect((sAddr, sPort))
 
-    message = ((domain, service))
+    #message = ((domain.encode(), service.encode()))
 
-    sockClient.send(message.encode())
+    sockClient.send(domain.encode())
+    domConfirm = sockClient.recv(1024).decode()
+    print("confirming message = " + domConfirm)
+    sockClient.send(service.encode())
     response = sockClient.recv(1024).decode()
 
     sockClient.close()
     
-    return response
+    return "Sever returned " + response + " for service named " + service
 
 def main(intel_server_addr, intel_server_port, domain, service):
     runClient(intel_server_addr, intel_server_port, domain, service)
@@ -45,5 +49,5 @@ if __name__ == "__main__":
             help="The Service you want to use on the domain"
         )
     args = argParser.parse_args()
-    inServe.main()
+    #os.system('python3 cs3640-intelserver.py')
     main(args.intel_server_addr, args.intel_server_port, args.domain, args.service)
