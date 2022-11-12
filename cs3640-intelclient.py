@@ -1,4 +1,5 @@
 import socket
+import cs3640-intelserver as inServ
 from argparse import ArgumentParser
 
 def runClient(sAddr,sPort,domain,service):
@@ -44,4 +45,5 @@ if __name__ == "__main__":
             help="The Service you want to use on the domain"
         )
     args = argParser.parse_args()
+    inServe.main()
     main(args.intel_server_addr, args.intel_server_port, args.domain, args.service)

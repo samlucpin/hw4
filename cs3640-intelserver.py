@@ -53,21 +53,34 @@ def ORGANIZATION(domain):
     return argDict['commonName']
 
 def runServer():
+    response = ""
     serverSock = socket.socket()
     serverSock.bind(('127.0.0.1', 5555))
     serverSock.listen(2)
     conn, addr = serverSock.accept()
-    while True:
-        data = conn.recv(1024).decode()
-        if not data:
-            break
-        #print("from connected user: " + str(data))
-        data = "tester"
-        conn.send(data.encode())
+    data = conn.recv(1024).decode()
+    dom = data[0]
+    service = data[1]
+    if (service=="IPV4_ADDR"):
+        response = IPV4_ADDR(dom)
+    elif (service=="IPV6_ADDR"):
+        response = IPV6_ADDR(dom)
+    elif (service=="TLS_CERT"):
+        response = TLS_CERT(dom)
+    elif (service=="HOSTING_AS"):
+        response = HOSTING_AS(dom)
+    elif (service=="ORGANIZATION"):
+        response = ORGANIZATION(dom)
+    else:
+        response = "Not A Valid Service Name"
+    conn.send(response.encode())
     conn.close()
 
-if __name__ == '__main__':
+def main():
     runServer()
+
+if __name__ == '__main__':
+    main()
 
 #class TCPHand(socketserver.BaseRequestHandler):
 
